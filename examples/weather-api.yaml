@@ -1,0 +1,420 @@
+openapi: 3.0.3
+info:
+  title: Weather Service API
+  description: A comprehensive weather service API for MCP server generation testing
+  version: 1.0.0
+  contact:
+    name: Weather Service Team
+    email: support@weather.example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.weather.example.com/v1
+    description: Production server
+  - url: https://staging.weather.example.com/v1
+    description: Staging server
+
+paths:
+  /weather/current:
+    get:
+      operationId: getCurrentWeather
+      summary: Get current weather
+      description: Retrieve current weather information for a specific location
+      parameters:
+        - name: location
+          in: query
+          required: true
+          description: Location name (city, state, country)
+          schema:
+            type: string
+            example: "San Francisco, CA"
+        - name: units
+          in: query
+          required: false
+          description: Temperature units
+          schema:
+            type: string
+            enum: [celsius, fahrenheit]
+            default: celsius
+      responses:
+        '200':
+          description: Current weather data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentWeather'
+        '400':
+          description: Invalid request parameters
+        '404':
+          description: Location not found
+        '500':
+          description: Internal server error
+
+  /weather/forecast:
+    get:
+      operationId: getWeatherForecast
+      summary: Get weather forecast
+      description: Get weather forecast for multiple days
+      parameters:
+        - name: location
+          in: query
+          required: true
+          description: Location name
+          schema:
+            type: string
+        - name: days
+          in: query
+          required: false
+          description: Number of forecast days (1-10)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 5
+      responses:
+        '200':
+          description: Weather forecast data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherForecast'
+
+  /weather/alerts:
+    get:
+      operationId: getWeatherAlerts
+      summary: Get weather alerts
+      description: Get active weather alerts for a location
+      parameters:
+        - name: location
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Weather alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherAlert'
+
+  /locations/search:
+    get:
+      operationId: searchLocations
+      summary: Search locations
+      description: Search for locations by name
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 2
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+
+  /weather/history:
+    post:
+      operationId: getWeatherHistory
+      summary: Get historical weather data
+      description: Retrieve historical weather data for a location and date range
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HistoryRequest'
+      responses:
+        '200':
+          description: Historical weather data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalWeather'
+
+  /weather/air-quality:
+    get:
+      operationId: getAirQuality
+      summary: Get air quality data
+      description: Get current air quality information for a location
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -90
+            maximum: 90
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -180
+            maximum: 180
+      responses:
+        '200':
+          description: Air quality data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirQuality'
+
+components:
+  schemas:
+    CurrentWeather:
+      type: object
+      required:
+        - location
+        - temperature
+        - condition
+        - humidity
+        - timestamp
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+        temperature:
+          type: number
+          description: Current temperature
+        condition:
+          type: string
+          description: Weather condition
+          example: "partly cloudy"
+        humidity:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Humidity percentage
+        wind_speed:
+          type: number
+          description: Wind speed
+        wind_direction:
+          type: string
+          description: Wind direction
+        pressure:
+          type: number
+          description: Atmospheric pressure
+        visibility:
+          type: number
+          description: Visibility in kilometers
+        uv_index:
+          type: number
+          description: UV index
+        timestamp:
+          type: string
+          format: date-time
+          description: Data timestamp
+
+    WeatherForecast:
+      type: object
+      required:
+        - location
+        - forecast_days
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+        forecast_days:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayForecast'
+
+    DayForecast:
+      type: object
+      required:
+        - date
+        - high_temp
+        - low_temp
+        - condition
+      properties:
+        date:
+          type: string
+          format: date
+        high_temp:
+          type: number
+        low_temp:
+          type: number
+        condition:
+          type: string
+        precipitation_chance:
+          type: integer
+          minimum: 0
+          maximum: 100
+        wind_speed:
+          type: number
+        humidity:
+          type: integer
+
+    WeatherAlert:
+      type: object
+      required:
+        - id
+        - title
+        - severity
+        - description
+        - start_time
+        - end_time
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+          enum: [minor, moderate, severe, extreme]
+        description:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        affected_areas:
+          type: array
+          items:
+            type: string
+
+    Location:
+      type: object
+      required:
+        - name
+        - latitude
+        - longitude
+      properties:
+        name:
+          type: string
+          description: Location name
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        country:
+          type: string
+        state:
+          type: string
+        timezone:
+          type: string
+
+    HistoryRequest:
+      type: object
+      required:
+        - location
+        - start_date
+        - end_date
+      properties:
+        location:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        data_points:
+          type: array
+          items:
+            type: string
+            enum: [temperature, humidity, precipitation, wind]
+
+    HistoricalWeather:
+      type: object
+      required:
+        - location
+        - data
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoricalDataPoint'
+
+    HistoricalDataPoint:
+      type: object
+      required:
+        - date
+        - temperature_high
+        - temperature_low
+      properties:
+        date:
+          type: string
+          format: date
+        temperature_high:
+          type: number
+        temperature_low:
+          type: number
+        humidity:
+          type: integer
+        precipitation:
+          type: number
+        wind_speed:
+          type: number
+
+    AirQuality:
+      type: object
+      required:
+        - aqi
+        - category
+        - pollutants
+        - timestamp
+      properties:
+        aqi:
+          type: integer
+          description: Air Quality Index
+          minimum: 0
+          maximum: 500
+        category:
+          type: string
+          enum: [good, moderate, unhealthy_for_sensitive, unhealthy, very_unhealthy, hazardous]
+        pollutants:
+          type: object
+          properties:
+            pm25:
+              type: number
+            pm10:
+              type: number
+            o3:
+              type: number
+            no2:
+              type: number
+            so2:
+              type: number
+            co:
+              type: number
+        timestamp:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKeyAuth: []

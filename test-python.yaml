@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Test API
+  version: 1.0.0
+  description: Simple test API for Python generation
+paths:
+  /hello:
+    get:
+      operationId: getHello
+      summary: Get hello message
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Name to greet
+      responses:
+        '200':
+          description: Hello message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string

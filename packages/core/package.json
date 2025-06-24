@@ -1,0 +1,38 @@
+{
+  "name": "@mcpgen/core",
+  "version": "1.0.0",
+  "description": "Core generation engine for MCPGen",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^10.1.0",
+    "handlebars": "^4.7.8",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "yaml": "^2.3.0",
+    "openapi-types": "^12.1.3"
+  },
+  "devDependencies": {
+    "@types/handlebars": "^4.1.0"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

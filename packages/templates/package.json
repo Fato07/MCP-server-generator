@@ -1,0 +1,31 @@
+{
+  "name": "@mcpgen/templates",
+  "version": "1.0.0",
+  "description": "Templates for MCPGen code generation",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@mcpgen/core": "workspace:*"
+  },
+  "files": [
+    "dist/**/*",
+    "templates/**/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
